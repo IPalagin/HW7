@@ -58,12 +58,28 @@ class Program : Game
 
         Random rndFood = new Random();
 
-        foodX = rndFood.Next(0, 800 - foodSize);
-        foodY = rndFood.Next(165, 600 - foodSize);
+        //Генерация еды вне стула.
+        do
+        {
+            foodX = rndFood.Next(0, 800 - foodSize);
+            foodY = rndFood.Next(165, 600 - foodSize);
+        }
+        while (chairX + chairSize > foodX && chairX < foodX + foodSize
+      && chairY + chairSize > foodY && chairY < foodY + foodSize);
 
         Random rndChair = new Random();
 
+        //Генерация стула вне игрока.
+        do
+        {
+            chairX = rndChair.Next(100, 700 - chairSize);
+            chairY = rndChair.Next(165, 435 - chairSize);
+        }
+        while (playerX + playerSize > chairX && playerX < chairX + chairSize
+       && playerY + playerSize > chairY && playerY < chairY + chairSize);
+
         bool isLose = false;
+        bool chairCreated = false;
 
         PlayMusic(bgMusic, 10);
 
@@ -92,21 +108,33 @@ class Program : Game
                     isLose = true;
 
                     PlaySound(crashSound, 5);
+
+                    chairX = rndChair.Next(100, 700 - chairSize);
+                    chairY = rndChair.Next(165, 435 - chairSize);
                 }
 
-                if (playerScore % 5 == 0 && playerScore != 0)
-                {
-                    chairX = rndChair.Next(0, 800 - chairSize);
-                    chairY = rndChair.Next(165, 600 - chairSize);
-                    DrawSprite(chairTexture, chairX, chairY);
-                }
-
+                //Проверка столкновения со стулом.
                 if (playerX + playerSize > chairX && playerX < chairX + chairSize
                    && playerY + playerSize > chairY && playerY < chairY + chairSize)
                 {
                     isLose = true;
 
                     PlaySound(crashSound, 5);
+
+                    chairX = rndChair.Next(100, 700 - chairSize);
+                    chairY = rndChair.Next(165, 435 - chairSize);
+                }
+
+                //Проверка генерации стула.
+                if (playerScore % 2 == 0 && playerScore != 0 && !chairCreated)
+                {
+                    chairX = rndChair.Next(100, 700 - chairSize);
+                    chairY = rndChair.Next(165, 435 - chairSize);
+                    chairCreated = true;
+                }
+                else if (playerScore % 2 != 0)
+                {
+                    chairCreated = false;
                 }
             }
 
@@ -138,6 +166,8 @@ class Program : Game
             DrawPlayer();
 
             DrawSprite(foodTexture, foodX, foodY);
+
+            DrawSprite(chairTexture, chairX, chairY);
 
             SetFillColor(70, 70, 70);
             DrawText(20, 8, "Съедено корма: " + playerScore.ToString(), 18);
